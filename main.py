@@ -5,6 +5,9 @@ import torch.nn.functional as F
 
 import matplotlib.pyplot as plt
 
+from shapes import Sphere,Cube
+
+
 def main():
     draw_frame()
 
@@ -14,7 +17,7 @@ def draw_frame():
     ray_origin_tensor, ray_directon_tensor = get_pixel_rays(width,height,(0,0,0),None)
 
     depth_tensor =  march_rays_into_scene(ray_origin_tensor, ray_directon_tensor)
-    depth_tensor = depth_tensor.clip(0,20)
+    depth_tensor = depth_tensor.clip(0,30)
     depth_tensor = 1/ depth_tensor
     plt.imshow(depth_tensor.reshape(height,width).numpy())
     plt.show()
@@ -26,7 +29,7 @@ def get_pixel_rays( width, height, camera_position, camera_rotation):
     number_of_rays = width*height
 
     x = torch.linspace(-1 , 1 , width )
-    y = torch.linspace(-height/width, height/width, height)
+    y = torch.linspace(height/width, -height/width, height)
 
     y_grid, x_grid = torch.meshgrid(y,x)
 
@@ -55,18 +58,24 @@ def march_rays_into_scene(ray_origin_tensor, ray_directon_tensor):
     return depth_tensor
 
 def global_sign_distance_function(position_tensor):
-    s1 = sphere_sign_distance_function(position_tensor,[0,0,11])
-    s2 = sphere_sign_distance_function(position_tensor,[2,0,10])
-    return torch.minimum(s1,s2)
+    sphere = Sphere(sphere_radius=6)
+    sphere.set_position(0,0,15)
 
-def sphere_sign_distance_function(position_tensor,position):
-    sphere_origin = torch.tensor([position])
-    sphere_radius = 5
+    sphere2 = Sphere(sphere_radius=7)
+    sphere2.set_position(0,0,15)
 
-    sign_distance = ((position_tensor-sphere_origin)**2).sum(dim=1).sqrt() - sphere_radius
-
+    cube = Cube(cube_size=10)
+    cube.set_position(0,0,15)
+    cube.set_orientation(0,1.05,0)
     
-    return sign_distance.reshape(-1,1)
+    s1 = sphere.compute_signed_distance(position_tensor)
+    s2 = sphere2.compute_signed_distance(position_tensor)
+    c1 = cube.compute_signed_distance(position_tensor)
+
+    return torch.maximum( torch.maximum(-s1,c1) , s2)
+
+
+
 
 
 if __name__ == "__main__":
