@@ -13,23 +13,24 @@ def main():
 
 def draw_frame():
     width,height = 640,480
+    device = torch.device("cuda")
 
-    ray_origin_tensor, ray_directon_tensor = get_pixel_rays(width,height,(0,0,0),None)
+    ray_origin_tensor, ray_directon_tensor = get_pixel_rays(width,height,(0,0,0),None,device)
 
     depth_tensor =  march_rays_into_scene(ray_origin_tensor, ray_directon_tensor)
     depth_tensor = depth_tensor.clip(0,30)
     depth_tensor = 1/ depth_tensor
-    plt.imshow(depth_tensor.reshape(height,width).numpy())
+    plt.imshow(depth_tensor.reshape(height,width).cpu().numpy())
     plt.show()
 
 
 
-def get_pixel_rays( width, height, camera_position, camera_rotation):
+def get_pixel_rays( width, height, camera_position, camera_rotation,device):
 
     number_of_rays = width*height
 
-    x = torch.linspace(-1 , 1 , width )
-    y = torch.linspace(height/width, -height/width, height)
+    x = torch.linspace(-1 , 1 , width ,device=device)
+    y = torch.linspace(height/width, -height/width, height, device=device)
 
     y_grid, x_grid = torch.meshgrid(y,x)
 
@@ -39,14 +40,16 @@ def get_pixel_rays( width, height, camera_position, camera_rotation):
 
     ray_directon_tensor = F.normalize(ray_directon_tensor)
 
-    ray_origin_tensor = torch.tensor(camera_position).repeat(number_of_rays,1)
+    ray_origin_tensor = torch.tensor(camera_position,device=device).repeat(number_of_rays,1)
 
     return ray_origin_tensor, ray_directon_tensor
 
 def march_rays_into_scene(ray_origin_tensor, ray_directon_tensor):
+    device = ray_origin_tensor.device
+
     number_of_rays = ray_directon_tensor.shape[0]
 
-    depth_tensor = torch.zeros(number_of_rays,1)
+    depth_tensor = torch.zeros(number_of_rays,1,device=device)
     
     for i in range(50):
         position_tensor = ray_origin_tensor + depth_tensor * ray_directon_tensor

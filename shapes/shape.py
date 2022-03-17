@@ -34,10 +34,11 @@ class Shape():
         return signed_distance_tensor.reshape(-1,1)
 
     def _transform_points_to_local_frame(self,point_tensor):
+        device = point_tensor.device
         # undo the shift
-        point_tensor = point_tensor - self.position
+        point_tensor = point_tensor - self.position.to(device)
         # undo the rotation
-        point_tensor = point_tensor @ self.rotation_matrix_inverse
+        point_tensor = point_tensor @ self.rotation_matrix_inverse.to(device)
 
         return point_tensor
 
