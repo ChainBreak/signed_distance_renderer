@@ -5,8 +5,8 @@ import torch.nn.functional as F
 
 import matplotlib.pyplot as plt
 
-from shapes import Sphere,Cube
-
+from shapes import Compose, Sphere,Cube
+from operations import Start, Join, Cut, Intersect
 
 def main():
     draw_frame()
@@ -58,21 +58,16 @@ def march_rays_into_scene(ray_origin_tensor, ray_directon_tensor):
     return depth_tensor
 
 def global_sign_distance_function(position_tensor):
-    sphere = Sphere(sphere_radius=6)
-    sphere.set_position(0,0,15)
+   
+ 
+    return Compose([
+        Start( Cube(cube_size=10, position=(0,0,15), orientation=(0,1.05,0)) ),
+        Cut( Sphere(sphere_radius=6, position=(0,0,15))  ),
+        Intersect( Sphere(sphere_radius=7, position=(0,0,15))  ),
+    ]).compute_signed_distance(position_tensor)
 
-    sphere2 = Sphere(sphere_radius=7)
-    sphere2.set_position(0,0,15)
+     
 
-    cube = Cube(cube_size=10)
-    cube.set_position(0,0,15)
-    cube.set_orientation(0,1.05,0)
-    
-    s1 = sphere.compute_signed_distance(position_tensor)
-    s2 = sphere2.compute_signed_distance(position_tensor)
-    c1 = cube.compute_signed_distance(position_tensor)
-
-    return torch.maximum( torch.maximum(-s1,c1) , s2)
 
 
 

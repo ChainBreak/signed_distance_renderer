@@ -2,9 +2,10 @@ import torch
 import math
 class Shape():
 
-    def __init__(self):
-        self.set_position(0.,0.,0.)
-        self.set_orientation(0.,0.,0.)
+    def __init__(self,position:tuple=(0.,0.,0.), orientation:tuple=(0.,0.,0.)):
+        self.set_position(*position)
+        self.set_orientation(*orientation)
+
 
     def set_position(self,x,y,z):
         self.position = torch.tensor([[x,y,z]])
