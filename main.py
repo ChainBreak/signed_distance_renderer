@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-import numpy as np
 import torch
 import torch.nn.functional as F
 
 import matplotlib.pyplot as plt
 
-from shapes import Compose, Sphere,Cube
-from operations import Start, Join, Cut, Intersect
+from shapes import cube, sphere
+from operations import join, cut, intersect
+from engine import transformable
 
 def main():
     draw_frame()
 
 def draw_frame():
-    width,height = 640,480
+    width,height = 1920,1080
     device = torch.device("cuda")
 
     ray_origin_tensor, ray_directon_tensor = get_pixel_rays(width,height,(0,0,0),None,device)
@@ -56,22 +56,28 @@ def march_rays_into_scene(ray_origin_tensor, ray_directon_tensor):
    
         sign_distance_tensor = global_sign_distance_function(position_tensor)
 
-        depth_tensor += sign_distance_tensor
+        depth_tensor += sign_distance_tensor.reshape(-1,1)
     
     return depth_tensor
 
-def global_sign_distance_function(position_tensor):
-   
- 
-    return Compose([
-        Start( Cube(cube_size=10, position=(0,0,15), orientation=(0,1.05,0)) ),
-        Cut( Sphere(sphere_radius=6, position=(0,0,15))  ),
-        Intersect( Sphere(sphere_radius=7, position=(0,0,15))  ),
-    ]).compute_signed_distance(position_tensor)
-
-     
+def global_sign_distance_function(p):
+    t = 1
+    d_cube = cube(p, z=3, ry=60, rz=1)
+    d_sphere = sphere(p, z=3, x=0.5)
+    d = join(d_cube, d_sphere)
+    d = cut(d, sphere(p, z=3, x=-0.5))
 
 
+    return jewl(p,t,z=3)
+                
+
+@transformable
+def jewl(p,t):
+
+    d2 = intersect(
+        *[cube(p, ry=ry, rz=0,rx=45) for ry in range(0,90,15)]
+    )
+    return d2
 
 
 
