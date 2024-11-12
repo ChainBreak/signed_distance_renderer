@@ -15,12 +15,13 @@ def transformable(sdf_function):
             sx = 1,
             sy = 1,
             sz = 1,
+            s=1,
             **kwargs,
         ):
 
         points = translate_points(points, x, y, z)
         points = rotate_points(points, rx, ry, rz)
-        points = scale_points(points, sx, sy, sz)
+        points = scale_points(points, s, sx, sy, sz)
 
         return sdf_function(points, *args, **kwargs)
     return wrapper
@@ -54,5 +55,5 @@ def translate_points(points:torch.Tensor, x, y, z):
     points = points - torch.tensor([[x,y,z]],device=points.device)
     return points 
 
-def scale_points(points:torch.Tensor, sx, sy, sz):
-    return points
+def scale_points(points:torch.Tensor, s, sx, sy, sz):
+    return points / torch.tensor([[s*sx, s*sy, s*sz]],device=points.device)
