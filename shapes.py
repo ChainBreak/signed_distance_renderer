@@ -1,7 +1,7 @@
 import torch
 import math
 
-from engine.transformable import transformable
+from transformable import transformable
 
 @transformable
 def cube(point_tensor):

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from shapes import cube, sphere
 from operations import join, cut, intersect
-from engine import transformable
+from transformable import transformable
 
 def main():
     draw_frame()
@@ -67,20 +67,8 @@ def global_sign_distance_function(p):
     d = join(d_cube, d_sphere)
     d = cut(d, sphere(p, z=3, x=-0.5))
 
-
-    return jewl(p,t,z=3)
+    return d
                 
-
-@transformable
-def jewl(p,t):
-
-    d2 = intersect(
-        *[cube(p, ry=ry, rz=0,rx=45) for ry in range(0,90,15)]
-    )
-    return d2
-
-
-
 
 if __name__ == "__main__":
     main()
